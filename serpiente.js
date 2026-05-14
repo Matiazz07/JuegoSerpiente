@@ -1,14 +1,19 @@
-
 const canvas = document.getElementById("canvasJuego");
 const ctx = canvas.getContext("2d");
 const TAMANIO_CANVAS = 600;
 const TAMANIO_CELDA = 25;
-const SERPIENTE = [
+let SERPIENTE = [
   { x: 10, y: 9, },
   { x: 10, y: 10 },
   { x: 10, y: 11 },
   { x: 11, y: 11 }
 ]
+let direccionActual = "arriba";
+let posicionComida = { x: 5, y: 5 };
+let juegoterminado = false;
+let puntaje = 0;
+let velocidadSerpiente = 300;
+let intervaloJuego;
 
 function dibujarTablero() {
   ctx.strokeStyle = "#ff0000ff";
@@ -32,8 +37,8 @@ function limpiarCanvas() {
 function dibujarTodo() {
   limpiarCanvas();
   dibujarTablero();
-  dibujarNumeros();
   dibujarSerpiente();
+  crearComida();
 }
 
 function dibujarNumeros() {
@@ -72,99 +77,152 @@ function dibujarSerpiente() {
       pintarCoordenada(serpiente.x, serpiente.y, colorCuerpo);
     }
   }
+  dibujarTablero();
 }
 
 function moverSerpienteDerecha() {
-  let posicionAnterior = { x: 0, y: 0 };
+  let nuevoElemento = { x: 0, y: 0 }
   if ((SERPIENTE[0].x + 2) * TAMANIO_CELDA > canvas.width) {
+    gameOver();
     return;
   }
-  for (let i = 0; i < SERPIENTE.length; i++) {
-    let posicionX = SERPIENTE[i].x;
-    let posicionY = SERPIENTE[i].y;
-    if (i == 0) {
-      SERPIENTE[i].x = SERPIENTE[i].x + 1;
-    } else {
-      SERPIENTE[i].x = posicionAnterior.x;
-      SERPIENTE[i].y = posicionAnterior.y;
-    }
-    posicionAnterior.x = posicionX;
-    posicionAnterior.y = posicionY;
-  }
+  nuevoElemento.x = SERPIENTE[0].x + 1
+  nuevoElemento.y = SERPIENTE[0].y
+  SERPIENTE.unshift(nuevoElemento)
+  SERPIENTE.pop()
 }
 
 function moverSerpienteAbajo() {
-  let posicionAnterior = { x: 0, y: 0 };
+  let nuevoElemento = { x: 0, y: 0 }
   if ((SERPIENTE[0].y + 2) * TAMANIO_CELDA > canvas.height) {
+    gameOver();
     return;
   }
-  for (let i = 0; i < SERPIENTE.length; i++) {
-    let posicionX = SERPIENTE[i].x;
-    let posicionY = SERPIENTE[i].y;
-    if (i == 0) {
-      SERPIENTE[i].y = SERPIENTE[i].y + 1;
-    } else {
-      SERPIENTE[i].x = posicionAnterior.x;
-      SERPIENTE[i].y = posicionAnterior.y;
-    }
-    posicionAnterior.x = posicionX;
-    posicionAnterior.y = posicionY;
-  }
+  nuevoElemento.x = SERPIENTE[0].x
+  nuevoElemento.y = SERPIENTE[0].y + 1
+  SERPIENTE.unshift(nuevoElemento)
+  SERPIENTE.pop()
 }
 
 function moverSerpienteIzquierda() {
-  let posicionAnterior = { x: 0, y: 0 };
+  let nuevoElemento = { x: 0, y: 0 }
   if ((SERPIENTE[0].x - 1) * TAMANIO_CELDA < 0) {
+    gameOver();
     return;
   }
-  for (let i = 0; i < SERPIENTE.length; i++) {
-    let posicionX = SERPIENTE[i].x;
-    let posicionY = SERPIENTE[i].y;
-    if (i == 0) {
-      SERPIENTE[i].x = SERPIENTE[i].x - 1;
-    } else {
-      SERPIENTE[i].x = posicionAnterior.x;
-      SERPIENTE[i].y = posicionAnterior.y;
-    }
-    posicionAnterior.x = posicionX;
-    posicionAnterior.y = posicionY;
-  }
+  nuevoElemento.x = SERPIENTE[0].x - 1
+  nuevoElemento.y = SERPIENTE[0].y
+  SERPIENTE.unshift(nuevoElemento)
+  SERPIENTE.pop()
 }
 
 function moverSerpienteArriba() {
-  let posicionAnterior = { x: 0, y: 0 };
+  let nuevoElemento = { x: 0, y: 0 }
   if ((SERPIENTE[0].y - 1) * TAMANIO_CELDA < 0) {
+    gameOver();
     return;
   }
-  for (let i = 0; i < SERPIENTE.length; i++) {
-    let posicionX = SERPIENTE[i].x;
-    let posicionY = SERPIENTE[i].y;
-    if (i == 0) {
-      SERPIENTE[i].y = SERPIENTE[i].y - 1;
-    } else {
-      SERPIENTE[i].x = posicionAnterior.x;
-      SERPIENTE[i].y = posicionAnterior.y;
-    }
-    posicionAnterior.x = posicionX;
-    posicionAnterior.y = posicionY;
-  }
+  nuevoElemento.x = SERPIENTE[0].x
+  nuevoElemento.y = SERPIENTE[0].y - 1
+  SERPIENTE.unshift(nuevoElemento)
+  SERPIENTE.pop()
 }
 
-
 function cambiarDireccion(direccion) {
-  switch (direccion) {
+  direccionActual = direccion;
+}
+
+function iniciarJuego() {
+  intervaloJuego = setInterval(moverSerpiente, 1000 - velocidadSerpiente);
+}
+
+function pausarJuego() {
+  clearInterval(intervaloJuego);
+}
+
+function moverSerpiente() {
+  let atrapada = verificarColision();
+  let nuevoElemento = { x: SERPIENTE[0].x, y: SERPIENTE[0].y };
+  if (!gameOver) {
+    return;
+  }
+  switch (direccionActual) {
     case "arriba":
       moverSerpienteArriba();
+      nuevoElemento.y--
       break;
     case "abajo":
       moverSerpienteAbajo();
+      nuevoElemento.y++
       break;
     case "izquierda":
       moverSerpienteIzquierda();
+      nuevoElemento.x--
       break;
     case "derecha":
       moverSerpienteDerecha();
+      nuevoElemento.x++
       break;
   }
   dibujarTodo();
+  if (atrapada) {
+    SERPIENTE.unshift(nuevoElemento);
+    aumentarPuntaje();
+    pintarComidaRandom();
+  }
+  dibujarTodo();
+}
+
+function crearComida() {
+  pintarCoordenada(posicionComida.x, posicionComida.y, "green");
+}
+
+function pintarComidaRandom() {
+  posicionComida.x = Math.floor(Math.random() * canvas.width / TAMANIO_CELDA);
+  posicionComida.y = Math.floor(Math.random() * canvas.height / TAMANIO_CELDA);
+  pintarCoordenada(posicionComida.x, posicionComida.y, "green");
+}
+
+function verificarColision() {
+  if (posicionComida.x == SERPIENTE[0].x && posicionComida.y == SERPIENTE[0].y) {
+    return true;
+  }
+  return false;
+}
+
+function aumentarPuntaje() {
+  puntaje++;
+  if (puntaje % 2 == 0 && velocidadSerpiente <= 800) {
+    velocidadSerpiente += 50;
+    intervaloJuego = setInterval(moverSerpiente, 1000 - velocidadSerpiente);
+  }
+  document.getElementById("puntaje").innerHTML = puntaje;
+}
+
+function cambiarEstado(estado) {
+  document.getElementById("estado").innerHTML = estado;
+}
+
+function gameOver() {
+  juegoterminado = true;
+  clearInterval(intervaloJuego);
+  cambiarEstado("Game Over");
+}
+
+function reiniciarJuego() {
+  limpiarCanvas();
+  dibujarTablero();
+  SERPIENTE = [
+    { x: 10, y: 9, },
+    { x: 10, y: 10 },
+    { x: 10, y: 11 },
+    { x: 11, y: 11 }
+  ]
+  puntaje = 0;
+  direccionActual = "arriba";
+  cambiarEstado("Listo");
+  juegoterminado = false;
+  pintarComidaRandom();
+  dibujarSerpiente();
+  clearInterval(intervaloJuego);
 }
