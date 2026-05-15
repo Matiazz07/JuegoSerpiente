@@ -235,3 +235,31 @@ function reiniciarJuego() {
   pintarComidaRandom();
   dibujarTodo();
 }
+
+document.addEventListener("keydown", function (evento) {
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(evento.key) > -1) {
+    evento.preventDefault();
+  }
+  switch (evento.key) {
+    case "ArrowUp":
+    case "w":
+    case "W":
+      cambiarDireccion("arriba");
+      break;
+    case "ArrowDown":
+    case "s":
+    case "S":
+      cambiarDireccion("abajo");
+      break;
+    case "ArrowLeft":
+    case "a":
+    case "A":
+      cambiarDireccion("izquierda");
+      break;
+    case "ArrowRight":
+    case "d":
+    case "D":
+      cambiarDireccion("derecha");
+      break;
+  }
+});
