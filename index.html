@@ -27,7 +27,17 @@
     </section>
 
     <canvas id="canvasJuego" width="600" height="600"></canvas>
+    <div id="modalInicio" class="modal activo">
+      <h2>🐍 ¡Hora de Cazar!</h2>
+      <p>Usa las flechas para comer manzanas y esquivar los muros grises.</p>
+      <button onclick="cerrarModal('modalInicio'); iniciarJuego()">¡Jugar Ahora!</button>
+    </div>
 
+    <div id="modalGameOver" class="modal">
+      <h2>☠️ Game Over</h2>
+      <p>Tu serpiente chocó.</p>
+      <button class="secundario" onclick="cerrarModal('modalGameOver'); reiniciarJuego()">Intentar de Nuevo</button>
+    </div>
     <section class="controles">
       <button class="vacio">-</button>
       <button onclick="cambiarDireccion('arriba')">⬆️</button>
