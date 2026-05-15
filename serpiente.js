@@ -134,39 +134,35 @@ function cambiarDireccion(direccion) {
 
 function iniciarJuego() {
   intervaloJuego = setInterval(moverSerpiente, 1000 - velocidadSerpiente);
+  cambiarEstado("Cazando!");
 }
 
 function pausarJuego() {
   clearInterval(intervaloJuego);
+  cambiarEstado("Descanzando...");
 }
 
 function moverSerpiente() {
   let atrapada = verificarColision();
-  let nuevoElemento = { x: SERPIENTE[0].x, y: SERPIENTE[0].y };
-  if (!gameOver) {
+  if (juegoterminado) {
     return;
   }
   switch (direccionActual) {
     case "arriba":
       moverSerpienteArriba();
-      nuevoElemento.y--
       break;
     case "abajo":
       moverSerpienteAbajo();
-      nuevoElemento.y++
       break;
     case "izquierda":
       moverSerpienteIzquierda();
-      nuevoElemento.x--
       break;
     case "derecha":
       moverSerpienteDerecha();
-      nuevoElemento.x++
       break;
   }
-  dibujarTodo();
   if (atrapada) {
-    SERPIENTE.unshift(nuevoElemento);
+    SERPIENTE.push(posicionComida);
     aumentarPuntaje();
     pintarComidaRandom();
   }
